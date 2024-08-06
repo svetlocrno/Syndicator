@@ -2,6 +2,11 @@ Syndicator.Tooltips = {}
 
 local LibBattlePetTooltipLine = LibStub("LibBattlePetTooltipLine-1-0")
 
+local function comma_value(n)
+	local left, num, right = string.match(n, "^([^%d]*%d)(%d*)(.-)$")
+	return left .. (num:reverse():gsub("(%d%d%d)", "%1,"):reverse()) .. right
+end
+
 local function CharacterAndRealmComparator(a, b)
   if a.realmNormalized == b.realmNormalized then
     return a.character < b.character
@@ -137,28 +142,28 @@ function Syndicator.Tooltips.AddItemLines(tooltip, summaries, itemLink)
     return
   end
 
-  AddDoubleLine(SYNDICATOR_L_INVENTORY, LINK_FONT_COLOR:WrapTextInColorCode(SYNDICATOR_L_TOTAL_X:format(WHITE_FONT_COLOR:WrapTextInColorCode(totals))))
+  AddDoubleLine(" "," ")
 
   local charactersShown = 0
   for _, s in ipairs(tooltipInfo.characters) do
     local entries = {}
     if s.bags > 0 then
-      table.insert(entries, SYNDICATOR_L_BAGS_X:format(WHITE_FONT_COLOR:WrapTextInColorCode(s.bags)))
+      table.insert(entries, SYNDICATOR_L_BAGS_X:format("|cFF00FF9A" .. comma_value(s.bags) .. "|r"))
     end
     if s.bank > 0 then
-      table.insert(entries, SYNDICATOR_L_BANK_X:format(WHITE_FONT_COLOR:WrapTextInColorCode(s.bank)))
+      table.insert(entries, SYNDICATOR_L_BANK_X:format("|cFF00FF9A" .. comma_value(s.bank) .. "|r"))
     end
     if s.mail > 0 then
-      table.insert(entries, SYNDICATOR_L_MAIL_X:format(WHITE_FONT_COLOR:WrapTextInColorCode(s.mail)))
+      table.insert(entries, SYNDICATOR_L_MAIL_X:format("|cFF00FF9A" .. comma_value(s.mail) .. "|r"))
     end
     if s.equipped > 0 then
-      table.insert(entries, SYNDICATOR_L_EQUIPPED_X:format(WHITE_FONT_COLOR:WrapTextInColorCode(s.equipped)))
+      table.insert(entries, SYNDICATOR_L_EQUIPPED_X:format("|cFF00FF9A" .. comma_value(s.equipped) .. "|r"))
     end
     if s.void > 0 then
-      table.insert(entries, SYNDICATOR_L_VOID_X:format(WHITE_FONT_COLOR:WrapTextInColorCode(s.void)))
+      table.insert(entries, SYNDICATOR_L_VOID_X:format("|cFF00FF9A" .. comma_value(s.void) .. "|r"))
     end
     if s.auctions > 0 then
-      table.insert(entries, SYNDICATOR_L_AUCTIONS_X:format(WHITE_FONT_COLOR:WrapTextInColorCode(s.auctions)))
+      table.insert(entries, SYNDICATOR_L_AUCTIONS_X:format("|cFF00FF9A" .. comma_value(s.auctions) .. "|r"))
     end
     local character = s.character
     if appendRealm then
@@ -175,29 +180,30 @@ function Syndicator.Tooltips.AddItemLines(tooltip, summaries, itemLink)
         tooltip:AddLine("  ...")
         break
       end
-      AddDoubleLine("  " .. character, LINK_FONT_COLOR:WrapTextInColorCode(strjoin(", ", unpack(entries))))
+      AddDoubleLine(character, "|cFFFF7F00" .. comma_value(s.bags + s.bank + s.mail + s.equipped + s.void + s.auctions) .. " |r" .. WHITE_FONT_COLOR:WrapTextInColorCode("(" .. strjoin(", ", unpack(entries)) .. ")"))
       charactersShown = charactersShown + 1
     end
   end
 
   for index = 1, math.min(#tooltipInfo.guilds, Syndicator.Config.Get("tooltips_character_limit")) do
     local s = tooltipInfo.guilds[index]
-    local output = SYNDICATOR_L_GUILD_X:format(WHITE_FONT_COLOR:WrapTextInColorCode(s.bank))
-    local guild = TRANSMOGRIFY_FONT_COLOR:WrapTextInColorCode(s.guild)
+    local output = SYNDICATOR_L_GUILD_X:format(LINK_FONT_COLOR:WrapTextInColorCode(comma_value(s.bank)))
+    local guild = LINK_FONT_COLOR:WrapTextInColorCode("<" .. s.guild .. ">")
     if appendRealm then
       guild = guild .. "-" .. s.realmNormalized
     end
     if Syndicator.Config.Get(Syndicator.Config.Options.SHOW_CHARACTER_RACE_ICONS) then
       guild = Syndicator.Utilities.GetGuildIcon() .. " " .. guild
     end
-    AddDoubleLine("  " .. guild, LINK_FONT_COLOR:WrapTextInColorCode(output))
+    AddDoubleLine(guild, WHITE_FONT_COLOR:WrapTextInColorCode("(" .. output .. ")"))
   end
   if #tooltipInfo.guilds > Syndicator.Config.Get("tooltips_character_limit") then
-    tooltip:AddLine("  ...")
+    tooltip:AddLine("...")
   end
   if tooltipInfo.warband[1] > 0 then
-    AddDoubleLine("  " .. PASSIVE_SPELL_FONT_COLOR:WrapTextInColorCode(SYNDICATOR_L_WARBAND), WHITE_FONT_COLOR:WrapTextInColorCode(tooltipInfo.warband[1]))
+    AddDoubleLine("|cFFe6cc80<" .. SYNDICATOR_L_WARBAND .. ">|r", WHITE_FONT_COLOR:WrapTextInColorCode("(Bank: " .. "|cFFe6cc80" .. tooltipInfo.warband[1] .. "|r)"))
   end
+  AddDoubleLine("Total owned: |cFF00FF9A" .. comma_value(totals) .. "|r", "")
   tooltip:Show()
 end
 

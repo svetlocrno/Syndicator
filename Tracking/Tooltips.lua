@@ -248,7 +248,6 @@ function Syndicator.Tooltips.AddCurrencyLines(tooltip, currencyID)
     appendRealm = true
   end
 
-  tooltip:AddLine(SYNDICATOR_L_ALL_CHARACTERS_COLON .. " " .. WHITE_FONT_COLOR:WrapTextInColorCode(FormatLargeNumber(quantity)))
   for index = 1, math.min(#summary, Syndicator.Config.Get("tooltips_character_limit")) do
     local s = summary[index]
     local character = s.character
@@ -261,10 +260,15 @@ function Syndicator.Tooltips.AddCurrencyLines(tooltip, currencyID)
     if Syndicator.Config.Get(Syndicator.Config.Options.SHOW_CHARACTER_RACE_ICONS) and s.race then
       character = Syndicator.Utilities.GetCharacterIcon(s.race, s.sex) .. " " .. character
     end
-    tooltip:AddDoubleLine("  " .. character, WHITE_FONT_COLOR:WrapTextInColorCode(FormatLargeNumber(s.quantity)))
+    if s.className then
+      tooltip:AddDoubleLine("  " .. character, "|c" .. (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[s.className].colorStr .. FormatLargeNumber(s.quantity) .. "|r")
+    else
+      tooltip:AddDoubleLine("  " .. character, WHITE_FONT_COLOR:WrapTextInColorCode(FormatLargeNumber(s.quantity)))
+    end
   end
   if #summary > Syndicator.Config.Get("tooltips_character_limit") then
     tooltip:AddLine("  ...")
   end
+  tooltip:AddLine(SYNDICATOR_L_ALL_CHARACTERS_COLON .. " " .. WHITE_FONT_COLOR:WrapTextInColorCode(FormatLargeNumber(quantity)))
   tooltip:Show()
 end
